@@ -29,7 +29,7 @@ int ans[N];
 
 void smawk(vector<int> &r, vector<int> &c);
 // r contains the row index of the matrix
-// c contains the column index o the matrix
+// c contains the column index of the matrix
 
 void interpolate(vector<int> &r, vector<int> &c) {
   vector<int> new_r;

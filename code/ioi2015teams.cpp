@@ -77,19 +77,21 @@ struct Seg {
   Seg(int _pos, int _l, int _r): pos(_pos), l(_l), r(_r){}
 };
 
+// 假設 cal(i, j) 是計算從轉移點 i 轉到 j 的代價
+
 void go(int m) {
   stack<Seg> sta;
   sta.push(Seg(0, 1, m));
-  for (int i = 1; i <= m; ++i) {
-    while (!sta.empty() && sta.top().r < i) sta.pop(); // 把過期的最佳解丟掉
-    dp[i] = cal(sta.top().pos, i) - a[i];
+  for (int j = 1; j <= m; ++j) {
+    while (!sta.empty() && sta.top().r < j) sta.pop(); // 把過期的最佳解丟掉
+    dp[j] = cal(sta.top().pos, j) - a[j]; // 平常的題目應該是不用 -a[j] 這項的，這邊 -a[j] 是因應題目要求
     
-    while (!sta.empty() && cal(sta.top().pos, sta.top().r) > cal(i, sta.top().r)) {
-      // 把不可能成為最佳解的部份 pop 掉
+    while (!sta.empty() && cal(sta.top().pos, sta.top().r) > cal(j, sta.top().r)) {
+      // 把被完全覆蓋的線段刪掉
       sta.pop();
     }
     if (sta.empty()) {
-      sta.push(Seg(i, i + 1, m));
+      sta.push(Seg(j, j + 1, m));
     }
     else {
       Seg seg = sta.top(); sta.pop();
@@ -97,11 +99,11 @@ void go(int m) {
       int l = seg.l - 1, r = seg.r;
       while (r - l > 1) {
         int mid = (l + r) >> 1;
-        if (cal(seg.pos, mid) >= cal(i, mid)) l = mid;
+        if (cal(seg.pos, mid) >= cal(j, mid)) l = mid;
         else r = mid;
       }
       sta.push(Seg(seg.pos, r, seg.r));
-      if (i + 1 <= l) sta.push(Seg(i, i + 1, l));
+      if (j + 1 <= l) sta.push(Seg(j, j + 1, l));
     }
   }
 }

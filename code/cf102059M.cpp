@@ -2,6 +2,13 @@
 using namespace std;
 
 typedef long long ll;
+
+const int N = 250006;
+const ll INF = (1ll << 60);
+vector<pii> G[N];
+pii dp[N][2];
+int n, k;
+
 typedef pair<ll, ll> pii;
 #define F first
 #define S second
@@ -14,12 +21,6 @@ pii operator-(const pii &p1, const pii &p2) {
   return make_pair(p1.F - p2.F, p1.S - p2.S);
 }
 
-const int N = 250006;
-const ll INF = (1ll << 60);
-vector<pii> G[N];
-pii dp[N][2];
-int n, k;
-
 void dfs(int v, int par, ll K) {
   pii sum = make_pair(0, 0);
   for (pii p : G[v]) {
@@ -28,7 +29,7 @@ void dfs(int v, int par, ll K) {
     dfs(u, v, K);
     sum = sum + max(dp[u][0], dp[u][1]);
   }
-  dp[v][0] = sum;
+  dp[v][0] = sum;  // (DP值, 選了多少條邊)
   dp[v][1] = make_pair(-INF, 0);
   for (pii p : G[v]) {
     int u = p.F, w = p.S;
@@ -58,6 +59,7 @@ void solve() {
     pii p1 = max(dp[1][0], dp[1][1]);
     dfs(1, 1, r);
     pii p2 = max(dp[1][0], dp[1][1]);
+    // 內插！
     ll dp_1 = p1.F - l * p1.S;
     ll dp_2 = p2.F - r * p2.S;
     cout << (dp_1 + (dp_2 - dp_1) * (k - p1.S) / (p2.S - p1.S)) << '\n';

@@ -80,6 +80,8 @@ struct ConvexHullMax {
   }
 } convexhull;
 
+// wow you find me, use the password "0x48ff9e0841b276bf"(without quotes) to unlock this paste: https://pastebin.com/2gYcxWCa
+
 const int N = 200006;
 ll s[N], f[N], dp[N];
 
