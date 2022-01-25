@@ -1,0 +1,129 @@
+\documentclass[standalone]{beamer}
+
+\begin{document}
+\section{單調隊列優化}
+
+\begin{frame}{\btitle{例題}}
+  \begin{problem}[ZJ a146 Sliding Window]
+    給定一個長度為 $N$ 的序列 $A$ 以及一個整數 $K$，請找出所有長度為 $K$ 的窗口極值。也就是說，對於所有的 $K \leq i \leq N$，求出 $\min_{i - K + 1 \leq j \leq i}A_j$ 以及 $\max_{i - K + 1 \leq j \leq i}A_j$。
+
+    \begin{itemize}
+      \item $N, K \leq 10^6$
+    \end{itemize}
+
+    比如說，如果 $A = (4, 3, 5, 1, 6), K = 3$，那你要分別輸出 $(5, 5, 6)$ 跟 $(3, 1, 1)$
+  \end{problem}
+\end{frame}
+
+\begin{frame}{單調隊列優化}
+  \begin{itemize}
+    \item naive 作法：$O(NK)$，太慢了
+    \item 因此，我們需要一些觀察
+    \item 假設我們在做 $\min$ 的情況
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{單調隊列優化}
+  \begin{itemize}
+    \item 假設我們已經計算完尾端是 $i$ 的答案
+    \item 那，對所有 $j < i$，如果 $A_j > A_i$，那 $A_j$ 就永遠不可能是答案了
+    \item $A = [9, 6, 2]$，在看到 $2$ 之後，$6$ 就不可能成為答案了
+    \item 因此，我們可以維護一個結構，來儲存\textbf{目前有可能是答案的元素}
+    \item 想想看，這個結構裡面的元素，應該是遞增的，還是遞減的？
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{單調隊列優化}
+  \begin{itemize}
+    \item 結構裡面的元素是遞增的
+    \item 後面的元素，雖然目前暫時不是最佳解，\textbf{但是等到前面的元素過期（window 大小超過 K）的時候}，就有可能變成最佳解了
+    \item 算法結構如下：
+    \begin{itemize}
+      \item 每次要將 $i$ 放入之前，可以先從後面將所有大於 $A_i$ 的元素全部 pop 掉（因為被 pop 掉的元素不可能成為最佳解了）
+      \item 每次計算答案的時候還需檢查在資料結構最前面（基於單調性，一定是目前裡面最小的元素）的元素是否還合法，不合法的話要 pop 掉
+      \item 我們便可以確定此時資料結構最前的元素就是位置 $i$ 的答案
+    \end{itemize}
+    \item 那個資料結構需要支援從前面刪除元素，從後面加入及刪除元素，雙向佇列（double-ended queue, deque）是一個不錯的選擇，且 STL 也有提供 \texttt{std::deque} 容器，不需要自己手寫。
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{單調隊列優化}
+  假設 $A = [4, 6, 8, 7, 9, 1], K = 3$
+
+  \begin{center}
+    \begin{tabular}{|p{0.1\textwidth}|p{0.1\textwidth}|p{0.1\textwidth}|p{0.1\textwidth}|p{0.1\textwidth}|p{0.1\textwidth}|}
+      \hline
+      4 & 6 & 8 & 7 & 9 & 1 \\ [5ex]
+      \hline
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]{\btitle{範例程式碼}}
+  \begin{minted}[breaklines]{cpp}
+    void find_min(int n, int k) {
+      deque<int> dq;
+      for (int i = 1; i <= n; ++i) {
+        while (!dq.empty() && a[dq.back()] > a[i]) dq.pop_back(); // 把所有大於 a[i] 的元素通通刪掉
+        dq.push_back(i);
+        if (dq.front() == i - k) dq.pop_front(); // 如果最前面的元素已經不合法（過期），就 pop 掉
+        ans_mn[i] = a[dq.front()];
+      }
+    }
+  \end{minted}
+\end{frame}
+
+\begin{frame}{單調隊列優化}
+  \begin{itemize}
+    \item 時間複雜度？$O(N^2)$？
+    \item 均攤分析：考慮\textbf{總共的操作數量}（在這題來說就是看 \texttt{pop} 跟 \texttt{push} 的數量）
+    \item \texttt{push} 至多 $N$ 次，因此也至多 \texttt{pop} $N$ 次
+    \item 因此總操作數量為 $O(N)$，每個操作是均攤 $O(1)$ 的
+    \item 因此，總操作的複雜度為 $O(N)$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{\btitle{應用}}
+  \begin{problem}[CF 372C Watching Fireworks is Fun]
+    有 $M$ 個煙火將在一維數線上綻放。第 $i$ 個煙火在時間 $t_i$ 、於位置 $a_i$ 綻放，其中 $1 \leq a_i \leq N$。如果你在位置 $1 \leq x \leq N$ 觀看煙火 $i$ 的話，你會獲得 $b_i - |a_i - x|$ 的開心度。此外，你每秒可以移動 $d$ 單位的距離，且不能離開 $1$ 到 $N$ 的位置範圍。你可以任選初始位置，請問看完 $M$ 的煙火所獲得的總開心度最大能多少。
+
+    \begin{itemize}
+      \item $1 \leq M \leq 300$
+      \item $1 \leq N \leq 1.5 \times 10^5$
+    \end{itemize}
+  \end{problem}
+  先想想看 DP 式子要怎麼列，再看看能不能用單調隊列優化達到更好的複雜度
+\end{frame}
+
+\begin{frame}{\btitle{應用}}
+  \begin{itemize}
+    \item 首先將所有的煙火按照綻放的時間，由小到大排序好
+    \item 令 $dp(i, j)$ 為看完第 $i$ 個煙火且位於位置 $j$ 的最大開心度
+    \item $dp(0, i) = 0$ 對所有 $1 \leq i \leq N$
+    \item $dp(i, j) = \max_{|k - j| \leq d \times (t_i - t_{i - 1})} dp(i - 1, k) + b_i - |a_i - j|$
+    \item 注意到 $b_i - |a_i - j|$ 跟 $k$ 完全無關，所以重要的其實是求出所有在可到達範圍內的 $dp_{i - 1, k}$ 的最大值
+    \item 由於 $|k - j| \leq d \times (t_i - t_{i - 1})$ 這個限制其實是 $\max(1, j - d \times (t_i - t_{i - 1}) \leq k \leq \min(N, j + d \times (t_i - t_{i - 1}))$，所以這個問題其實就是一個滑動窗口極值的計算
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{\btitle{應用}}
+  \begin{problem}[有限個數的多重背包問題]
+    有 $N$ 種物品，第 $i$ 種重量為 $w_i$，價值為 $v_i$，且總共有 $s_i$ 個。求選出若干個物品使得總重量不超過 $W$ 的情況下，最大總價值為何。
+  \end{problem}
+
+  最 Naive 的作法是 $O(NWK)$，如果用二進制拆解的話可以壓到 $O(NW \log K)$（$K$ 是 $s_i$ 的最大值），有沒有辦法作到更好呢？
+\end{frame}
+
+
+\begin{frame}{\btitle{應用}}
+  \begin{itemize}
+    \item 令 $dp(i, j)$ 代表前 $i$ 種物品中，選出總重量為 $j$ 的最大價值和
+    \item $dp(i, j) = \max_{0 \leq x \leq s_i}\left\{dp(i - 1, j - x \times w_i) + x \times v_i \right\}$
+    \item $dp(i, j) = \max_{0 \leq \frac{j - k}{w_i} \leq s_i, j \equiv k \pmod w_i}\left\{dp(i - 1, k) + \frac{j - k}{w_i} \times v_i \right\}$
+    \item $dp(i, j) = \lfloor\frac{j}{w_i}\rfloor \times v_i + \max_{0 \leq \frac{j - k}{w_i} \leq s_i, j \equiv k \pmod w_i}\left\{dp(i - 1, k) - \lfloor\frac{k}{w_i}\rfloor \times v_i \right\}$
+    \item 如此一來，對於一個除以 $w_i$ 的餘數 $r$，上面的轉移式就是一個滑動窗口的極值問題，因此可以套用單調隊列的手法加速達到 $O(\text{除以 $w_i$ 餘 $r$ 的個數})$，對所有餘數取總和的話恰好就是 $O(W)$，於是有限背包問題便得到了 $O(NW)$ 的解法
+  \end{itemize}
+\end{frame}
+
+\end{document}

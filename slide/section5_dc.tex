@@ -1,0 +1,102 @@
+\documentclass[standalone]{beamer}
+
+\begin{document}
+\section{轉移點單調優化}
+
+\begin{frame}{\btitle{例題}}
+  \begin{problem}[ZJ a146 Sliding Window]
+    令 $F(i, j)$ 為一個對所有 $1 \leq i \leq j \leq N$ 的正整數 $i, j$ 都有定義的函數。對於所有的 $1 \leq j \leq N$，求 $\min_{i \leq j}F(i, j)$ 或 $\max_{i \leq j}F(i, j)$。
+  \end{problem}
+  這樣看起來有點抽象，我們來實際看一個例子：
+\end{frame}
+
+\begin{frame}{\btitle{例題}}
+  \begin{problem}[ZJ a146 Sliding Window]
+    有 $N$ 個位於一維數線上的餐廳，由左至右編為 $1$ 到 $N$ 號，其中 $i$ 號餐廳與 $i - 1$ 號餐廳的距離為 $A_i$。你有 $M$ 張餐卷，第 $i$ 張可以兌換第 $i$ 種食物且只能使用一次。已知這 $N$ 家餐廳都有販售這 $M$ 種食物，且第 $i$ 家餐廳的第 $j$ 種食物的好吃度為 $B_{i, j}$。你可以從任意間餐廳開始，請問「吃到食物的好吃度總和 $-$ 總行走距離」的最大值為何。
+    
+    \begin{itemize}
+      \item $1 \leq N \leq 5000$
+      \item $1 \leq M \leq 200$
+    \end{itemize}
+  \end{problem}
+\end{frame}
+
+\begin{frame}{\btitle{例題}}
+  \begin{itemize}
+    \item 首先可以知道，當決定了要在哪些餐廳買食物之後，最佳的策略一定是從最左的直接走到最右邊的餐廳，不會來回行走
+    \item 因此，定義 $F(i, j)$ 為從 $i$ 號餐廳開始，結束在 $j$ 號餐廳的最大價值。則 $F(i, j)$ 可以被寫成
+    \item $F(i, j) = \left(\sum_{f = 1}^{M}\max_{i \leq k \leq j}B_{k, f}\right) - \left(\sum_{k = i + 1}^{j}A_k\right)$
+    \item 其中 $i$ 與 $j$ 之間各種食物的最大好吃度可以透過 RMQ 預處理，$i$ 與 $j$ 的距離也可以透過前綴和達到 $O(1)$，因此可以在 $O(M)$ 的時間內計算好 $F(i, j)$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{\btitle{例題}}
+  那該如何有效率的計算 $\max_{i \leq j}F(i, j)$，或是更一般的，對所有餐廳 $j$ 求出以它當終點的最大價值呢 $V_j$？這裡我們必須用到一個性質：
+  \begin{theorem}[性質]
+    令 $H_j$ 為以 $j$ 當終點情況下的最佳起點，亦即：
+
+    \[ H_j = \mathop{\arg\max}_{i \leq j}F(i, j) \]
+
+    則 $H_j \leq H_{j + 1}$。也就是說當終點向右時，最佳的起點只會往右或不動
+  \end{theorem}
+\end{frame}
+
+\begin{frame}{\btitle{演算法}}
+\begin{itemize}
+  \item 有了這個性質之後，可以考慮下列的分治算法：
+  \item 假設現在我們想要計算所有 $L \leq j \leq R$ 的 $V_j$，並且我們知道所有在範圍內的 $H_j$ 都滿足 $L^\prime \leq H_j \leq R^\prime$ 
+  \item 令 $M = \lfloor\frac{L + R}{2}\rfloor$，那我們在 $O(R^\prime - L^\prime)$ 次計算 $F$ 值之內，枚舉 $[L^\prime, \min(R^\prime, M)]$ 之間的 $i$ 並找出最大的 $F(i, j)$ 以及對應的 $H_M$
+  \item 根據單調性，我們知道 $[L, M - 1]$ 的最佳起點會落在 $[L^\prime, H_M]$ 、 $[M + 1, R]$ 的最佳起點會落在 $[H_M, R^\prime]$。因此我們分別遞迴計算子問題 $\{L, M - 1, L^\prime, H_M\}$ 及 $\{M + 1, R, H_M, R^\prime\}$
+  \item 複雜度為 $O(N \log N \times F())$，其中 $F$ 是算一個 $F(i, j)$ 的值的複雜度
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\btitle{演算法}}
+  \begin{minted}[breaklines]{cpp}
+    void dc(int L, int R, int best_L, int best_R) {
+      if (L > R) return;
+      int mid = (L + R) >> 1;
+      for (int i = best_L; i <= best_R; ++i) {
+        if (h[mid] == 0 || f(mid, i) > f(mid, h[mid])) h[mid] = i;
+      }
+      dc(L, mid - 1, best_L, h[mid]);
+      dc(mid + 1, R, h[mid], best_R);
+    }
+  \end{minted}
+\end{frame}
+
+\begin{frame}{\btitle{CDQ 配轉移點單調}}
+  \begin{itemize}
+    \item 有了轉移點單調這個好東西後，我們可以回頭看一次 1D / 1D 凸單調
+    \item 應該不難發現，\textbf{1D / 1D 凸單調也是具有轉移點單調}這個性質的，但是在有些時候，\textbf{轉移來源必須是在線的}，導致我們無法快樂直接套用轉移點單調
+    \item 但其實，這個世界並沒有這麼不美好。這個問題可以用類似斜率優化 CDQ 的思維，來多花一點時間解決！假設我們現在正在算 $[L, R]$ 的答案，算法過程如下：
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{\btitle{CDQ 配轉移點單調}}
+  \begin{itemize}
+    \item 如果 L == R，結束遞迴
+    \item 否則，依序執行以下步驟：
+    \begin{itemize}
+      \item 遞迴計算左半部 $[L, mid]$ 的 DP 值。
+      \item 用左半部 $[L, mid]$ 算出來的 DP 值，更新右半部 $[mid + 1, R]$ 的 DP 值。
+      \item 遞迴計算右半部的 $[mid + 1, R]$ DP 值。
+    \end{itemize}
+    \item 複雜度為 $O(N \log^2 N)$
+    \item 範例 code 麻煩參考講義～
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{\btitle{基於轉移點單調的唬爛}}
+  \begin{itemize}
+    \item 使用這個方法之前，要先決定一個魔法常數 $magic$，接著，該方法的執行過程如下：
+    \item 假設現在在計算 $dp(i)$，並已知 $dp(i - 1)$ 的轉移點為 $p$
+    \item 嘗試從 $[p, p + magic]$ 轉移到 $dp(i)$，如果發現一個比 $p$ 好的點，把 $p$ 更新成新的轉移點，並重新執行這部份
+    \item 嘗試從 $[i - magic, i]$ 轉移到 $dp(i)$，如果發現一個比 $p$ 好的點，就更新 $p$
+    \item 複雜度為 $O(magic \times N)$，\textbf{但是並沒有保證正確性！}
+    \item 但是不失為一個\textbf{唬爛好方法}
+  \end{itemize}
+\end{frame}
+
+
+\end{document}

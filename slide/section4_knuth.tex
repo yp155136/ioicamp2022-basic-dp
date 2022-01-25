@@ -1,0 +1,90 @@
+
+\documentclass[standalone]{beamer}
+
+\begin{document}
+\section{Knuth Optimization}
+
+\begin{frame}{\btitle{前言}}
+  \begin{itemize}
+    \item 前面的章節，幾乎都是介紹 1D / 1D 的 DP 優化
+    \item 現在要來介紹 2D / 1D 相關的優化
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{\btitle{問題定義}}
+  \begin{theorem}[(2D/1D)]
+  要求的是一個二維代價 $dp[i][j], \;\forall\; 1\leq i< j\leq n$。
+  給一可在常數時間內求得的轉移代價函數 （transition cost function） $w(i,j), \;\forall\; 1\leq i<j\leq n$、
+  及初始化邊界 $dp[i][i]=0, \;\forall\; 1\leq i \leq n$；求：
+  %\[ E[j] = \min_{0\leq i<j}\left\{f(i,E[i])+w(i,j)\right\}, \;\forall\; 1\leq i\leq n \]
+  \[ dp[i][j] = w(i,j) + \min_{i\leq k<j}\left\{dp[i][k]+dp[k+1][j]\right\}, \;\forall\; 1\leq i<j\leq n \]
+  \end{theorem}
+\end{frame}
+
+\begin{frame}{\btitle{問題定義}}
+  \begin{itemize}
+    \item 我們知道 2D/1D 問題有顯然的 $O(N^3)$ 作法
+    \item 亦即對於要求 $dp[i][j]$，枚舉 $1\leq k <j$作為轉移的決策點並找到最小的轉移來源
+    \item 我們稱在這轉移中的最佳選擇 $k$ 為 $K_{i,j} = \mathrm{argmin}_{i\leq k<j}\left\{dp[i][k]+dp[k+1][j]\right\}$
+    \item 這邊我們提出一個性質：Optimal Split Point Monotonicity
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{\btitle{重要性質}}
+  \begin{theorem}[Monge condition implies Monotonic Optimal Split Point]
+  當上述 2D/1D 問題的代價 $C$ 滿足凸 convex Monge condition，亦即：
+  $$ dp[i][j]+dp[i+1][j+1] \geq dp[i][j+1]+dp[i+1][j]$$
+  則決策點具有單調性：
+  $$ K_{i,j-1} \leq K_{i,j} \leq K_{i+1,j} $$
+  \end{theorem}
+
+  白話來說：$dp[i][j]$ 的決策點界於 $dp[i][j-1]$ 與 $dp[i+1][j]$ 的決策點之間
+\end{frame}
+
+\begin{frame}{Knuth Optimization}
+  \begin{itemize}
+    \item 光這麼看好像看不出什麼端睨，$K_{i,j-1}$ 到 $K_{i+1,j}$ 究竟有多大也不清楚
+    \item 不過這時依然可以使用均攤分析！就讓我們一次分析填完一整(斜)排 DP 所需要花的時間吧：
+
+    \[
+    \begin{array}{r c l}
+               \dots &    \dots    & \dots \\
+    K_{i-2,j-3} \leq & K_{i-2,j-2} & \leq K_{i-1,j-2} \\
+    K_{i-1,j-2} \leq & K_{i-1,j-1} & \leq K_{i,j-1} \\
+    K_{i,j-1}   \leq & K_{i,j}     & \leq K_{i+1,j} \\
+    K_{i+1,j}   \leq & K_{i+1,j+1} & \leq K_{i+2,j+1} \\
+    K_{i+2,j+1} \leq & K_{i+2,j+2} & \leq K_{i+3,j+2}  \\
+               \dots &    \dots    & \dots
+    \end{array}
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Knuth Optimization}
+  \begin{itemize}
+    \item 斜著做 DP 的話，每一列要考慮的數量和不超過 $N$
+    \item 總複雜度為 $O(2N \times N) = O(N^2)$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\btitle{範例程式碼}}
+  \begin{minted}[breaklines]{cpp}
+    int kl = K[i][j - 1];
+    int kr = K[i + 1][j];
+    for (int k = kl; k <= kr; ++k) {
+      if (w(i, j) + dp[i][k] + dp[k + 1][j] < dp[i][j]) {
+        dp[i][j] = w(i, j) + dp[i][k] + dp[k + 1][j];
+        K[i][j] = k;
+      }
+    }
+  \end{minted}
+\end{frame}
+
+\begin{frame}{2D / 1D 凹優化}
+  \begin{itemize}
+    \item 基本上就只是做 $N$ 次 1D / 1D 凹優化
+    \item 非常不常見，這邊就不細講
+  \end{itemize}
+\end{frame}
+
+\end{document}
