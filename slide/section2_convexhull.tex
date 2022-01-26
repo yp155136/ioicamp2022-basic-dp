@@ -14,6 +14,7 @@
 
 \begin{frame}{斜率優化}
   \begin{itemize}
+    \item 常見的 DP 式子形式：$dp(i) = c_i + \max_{j \leq R_i} \{a_jx_i + b_j\}$
     \item 與剛才介紹的單調隊列優化很相似，對於兩個 $j, k$，如果有 $a_k > a_j$ 且 $a_kx + b_k > a_jx + b_j$
     \item 那麼對於所有的 $x^\prime > x$ 而言，$j$ 都不可能是最好的轉移來源
     \item 基於這個觀察，我們可以對已經算好的 $j \leq R_i$，都將 $a_jx + b_j$ 當成是二維平面上的一條直線畫出來
@@ -23,7 +24,7 @@
 \end{frame}
 
 \begin{frame}{\btitle{斜率、查詢單調}}
-  \begin{problem}[ZJ a146 Sliding Window]
+  \begin{problem}[CSES 2084 Monster Game I]
     現在你要過 $N$ 個關卡，關卡編號為 $1, 2, \dots, N$，每一個關卡都有一隻怪獸，第 $i$ 個關卡的怪獸的能力值為 $s_i$。在還沒進入任何關卡之前，你有一個初始的技能值 $x$。
 
     在第 $1, 2, \dots, N - 1$ 關卡中，你可以選擇打倒怪獸，或者是直接逃跑。如果你選擇打倒第 $i$ 隻怪獸，你要花 $f \times s_i$ 的時間打倒怪獸，其中 $f$ 是你當前的技能值。在打倒怪獸後，你的新的能力值會變成 $f_i$。
@@ -32,10 +33,10 @@
 
     \begin{itemize}
       \item $N \leq 2 \times 10^5$
-      \item $1 \leq s_1 \leq s_2 \leq \dots \leq s_N \leq 10^6$
-      \item $x \geq f_1 \geq f_2 \dots \geq f_N \geq 1$
+      \item $1 \leq s_1 \leq s_2 \leq \dots \leq s_N \leq 10^6$, $x \geq f_1 \geq f_2 \dots \geq f_N \geq 1$
     \end{itemize}
   \end{problem}
+  先想想看 DP 式子要怎麼列？
 \end{frame}
 
 \begin{frame}{\btitle{斜率、查詢單調}}
@@ -50,6 +51,7 @@
 
 \begin{frame}{\btitle{斜率、查詢單調}}
   \begin{itemize}
+    \item 斜率優化形式：$dp(i) = c_i + \max_{j \leq R_i} \{a_jx_i + b_j\}$
     \item $dp(i) = \max_{0 \leq j < i}(dp(j) + f_j \times s_i)$
     \item 如果把上面那個 DP 式寫成斜率優化的形式
     \item 斜率 $a = f_j$，截距 $b = dp(j)$
@@ -61,7 +63,7 @@
 \begin{frame}{\btitle{斜率、查詢單調}}
   \begin{itemize}
     \item 因此，在這個條件下，這個轉移式會跟前面介紹的單調隊列優化有類似著性質
-    \item 如果 $k < j$ 是 $i$ 的最佳轉移來源，那麼對於所有 $i < i^\prime$，從 $j$ 轉移一定會比從 $k$ 轉移來還的好
+    \item 如果 $k < j$ 是 $i$ 的最佳轉移來源，那麼對於所有 $i < i^\prime$，從 $j$ 轉移一定會比從 $k$ 轉移來還的好（後面的線斜率比較大，增長的幅度不會輸給前面的線）
     \item $a_jx_i + b_j > a_kx_i + b_k \implies a_jx_{i^\prime} + b_j = a_jx_i + a_j(x_{i^\prime} - x_i) + b_j > a_kx_i + a_k(x_{i^\prime} - x_i) + b_k = a_kx_{i^\prime} + b_k$
     \item 有了這個性質以後，我們可以進一步的將時間複雜度壓低
   \end{itemize}
@@ -82,8 +84,6 @@
     \item 由於斜率單調遞增，我們可以確定現在要加入的直線 $L^\prime$ 一定比現在 deque 中的直線斜率都還要大
     \item 而不難發現，$L^\prime$ 能淘汰的人會是 deque 尾端的一些\textbf{連續}的直線
     \item 假設現在 deque 中最後面的元素為 $L_{-1}$，倒數第二個為 $L_{-2}$
-    \item 則可以發現，當 \textbf{$L^\prime$ 與 $L_{-1}$ 的交點比 $L_{-1}$ 以及 $L_{-2}$ 的交點還要左邊}時
-    \item $L_{-1}$ 的有效區間會完全的被 $L^\prime$ 覆蓋，再也不可能成為轉移的候選人
   \end{itemize}
 \end{frame}
 
@@ -116,6 +116,13 @@
     \end{tikzpicture}
     \caption{$L^\prime$ 與 $L_{-2}$ 合力將 $L_{-1}$ 淘汰}
   \end{figure}
+\end{frame}
+
+\begin{frame}{\btitle{斜率、查詢單調}}
+  \begin{itemize}
+    \item 則可以發現，當 \textbf{$L^\prime$ 與 $L_{-1}$ 的交點比 $L_{-1}$ 以及 $L_{-2}$ 的交點還要左邊}時
+    \item $L_{-1}$ 的有效區間會完全的被 $L^\prime$ 覆蓋，再也不可能成為轉移的候選人
+  \end{itemize}
 \end{frame}
 
 
@@ -198,6 +205,7 @@
 
     註：上面的式子跟原題稍微不太一樣
   \end{problem}
+  先來想想看 DP 式子要怎麼列吧？
 \end{frame}
 
 \begin{frame}{\btitle{會單調過期的斜率、查詢單調}}
@@ -255,7 +263,7 @@
   \begin{itemize}
     \item 那這個時候 $L$ 與 $L_{-2}$ 合力殺掉 $L_{-1}$ 的條件就是「就算 $L_{-2}$ 過期 $L$ 還是一直比 $L_{-1}$ 優」
     \item 也就是說在檢查交點的時候，除了判斷 $(L, L_{-1})$ 與 $(L_{-2}, L_{-1})$ 這兩組交點外，還需要考慮 $L_{-2}$ 過期時的查詢位置 $x$
-    \item 所以\textbf{只要當 $(L, L_{-1})$ 的交點比 $x$ 還有 $(L_{-2}, L_{-1})$ 都還要左邊時，才能完全淘汰 $L_{-1}$}。
+    \item 所以\textbf{只要當 $(L, L_{-1})$ 的交點比過期點 $x$ 還有 $(L_{-2}, L_{-1})$ 都還要左邊時，才能完全淘汰 $L_{-1}$}。
   \end{itemize}
 \end{frame}
 
@@ -329,26 +337,9 @@
   \end{figure}
 \end{frame}
 
-\begin{frame}{斜率優化}
-  \begin{itemize}
-    \item 解決了查詢之後，接著必須考慮當 $R_i$ 增加的時候，該怎麼維護這個凸包
-    \item 首先，可以用斜率來二分搜以找到新加入的直線在凸包上的位置
-    \item 加入了之後，有一些原本在凸包上的直線會從凸包中被移除，有一些的有效區間則會被修改，且這些被淘汰的直線原本在凸包會是一個\textbf{連續的區間}
-    \item 具體來說，假設現在凸包中的直線斜率由小至大分別為 $(L_1, L_2, \ldots, L_k)$，且新的直線 $L^\prime$ 被加入凸包的位置為 $L_{i}$ 以及 $L_{i + 1}$ 之間，則會存在 $j$ 與 $k$ 使得 $\{L_k, L_{k + 1} \ldots, L_{i}, L_{i + 1}, \ldots, L_{j} \}$ 被 $L^\prime$ 淘汰，且 $L_{k - 1}$ 與 $L_{j + 1}$ 的有效區間被更新
-  \end{itemize}
-\end{frame}
 
 \begin{frame}{斜率優化}
-  \begin{itemize}
-    \item 那要如何更新有效區間呢？
-    \item 由於 $L^\prime$ 不能完全淘汰 $L_{j + 1}$ 的原因便是 $L^\prime$ 在完全打敗 $L_{j + 1}$ 之前就與 $L_{j + 1}$ 相交了
-    \item 因為 $L^\prime$ 的斜率小於 $L_{j + 1}$，相交就代表在交點 $x_0$ 之後，$L^\prime(x)$ 的值就不可能在比 $L_{j + 1}(x)$ 來得大了
-    \item 所以 $L^\prime$ 的有效區間的右界就到 $x_0$，而 $L_{j + 1}$ 的有效左界則會被改為 $x_0$
-    \item 同樣的論述可以套用在 $L_{k - 1}$ 上，不過由於 $L_{k - 1}$ 的斜率小於 $L^\prime$，會變成改動 $L_{k - 1}$ 的有效右界
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{斜率優化}
+解決了查詢之後，接著必須考慮當 $R_i$ 增加的時候，該怎麼維護這個凸包
 \begin{figure}[H]
 \begin{tikzpicture}[scale=0.2]
     % Draw axes
@@ -396,6 +387,24 @@
 
 \begin{frame}{斜率優化}
   \begin{itemize}
+    \item 首先，可以用斜率來二分搜以找到新加入的直線在凸包上的位置
+    \item 加入了之後，有一些原本在凸包上的直線會從凸包中被移除，有一些的有效區間則會被修改，且這些被淘汰的直線原本在凸包會是一個\textbf{連續的區間}
+    \item 具體來說，假設現在凸包中的直線斜率由小至大分別為 $(L_1, L_2, \ldots, L_k)$，且新的直線 $L^\prime$ 被加入凸包的位置為 $L_{i}$ 以及 $L_{i + 1}$ 之間，則會存在 $j$ 與 $k$ 使得 $\{L_k, L_{k + 1} \ldots, L_{i}, L_{i + 1}, \ldots, L_{j} \}$ 被 $L^\prime$ 淘汰，且 $L_{k - 1}$ 與 $L_{j + 1}$ 的有效區間被更新
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{斜率優化}
+  \begin{itemize}
+    \item 那要如何更新有效區間呢？
+    \item 由於 $L^\prime$ 不能完全淘汰 $L_{j + 1}$ 的原因便是 $L^\prime$ 在完全打敗 $L_{j + 1}$ 之前就與 $L_{j + 1}$ 相交了
+    \item 因為 $L^\prime$ 的斜率小於 $L_{j + 1}$，相交就代表在交點 $x_0$ 之後，$L^\prime(x)$ 的值就不可能在比 $L_{j + 1}(x)$ 來得大了
+    \item 所以 $L^\prime$ 的有效區間的右界就到 $x_0$，而 $L_{j + 1}$ 的有效左界則會被改為 $x_0$
+    \item 同樣的論述可以套用在 $L_{k - 1}$ 上，不過由於 $L_{k - 1}$ 的斜率小於 $L^\prime$，會變成改動 $L_{k - 1}$ 的有效右界
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{斜率優化}
+  \begin{itemize}
     \item 那這樣的時間複雜度會是多少呢？
     \item 每次查詢以及插入需要使用若干次二分搜，一次為 $O(\log{N})$
     \item 並且在插入後會刪掉一些數量不等的元素，一次刪除的複雜度也是 $O(\log{N})$
@@ -416,8 +425,7 @@
 
 \begin{frame}{斜率優化}
   \begin{itemize}
-    \item 一個理想的結構為一個平衡二元樹
-    \item 由於實作方便，通常都是使用 \texttt{std::set} 配合自定義的直線 \texttt{Line}
+    \item 一個理想的結構為一個平衡二元樹，由於實作方便，通常都是使用 \texttt{std::set} 配合自定義的直線 \texttt{Line}
     \item 不過在我們要支援的操作中，有兩種二分搜的基準（斜率、有效區間），直接套用 \texttt{std::set} 的話可能會有一些小問題
     \item 一個直覺的處理方法是維護兩個 \texttt{std::set}，不過這樣不僅會讓 code 量變很大而且還會讓常數變大，並不是一個實惠的做法。以下介紹兩種處理的方法，讀者可以自行參考使用
     \begin{enumerate}
@@ -494,6 +502,7 @@
     \item 可以這麼做的理由是因為，我們已經知道所有左半邊的 DP 值（也就是說，我們已經知道所有的線），同時我們也可以知道所有右半部的詢問
     \item 因此，我們就可以\textbf{自由的決定他們的順序}，得到一個好的順序之後，我們就可以好好的方便做事了！
     \item 也因此，「用左半部更新右半部」這個部份，我們可以花 $O(N \log N)$ 的時間排序，並且花 $O(N)$ 的時間內解決。因此，整體複雜度就變成 $T(N) = 2T(\frac{N}{2} + O(N \log N))$，得到 $T(N) = O(N \log^2 N)$ 的複雜度
+    \item 用 merge sort 的話，複雜度可以壓到 $O(N \log N)$！
     \item 可以參考講義上面的範例程式碼～
   \end{itemize}
 \end{frame}

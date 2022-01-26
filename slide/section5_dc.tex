@@ -4,14 +4,14 @@
 \section{轉移點單調優化}
 
 \begin{frame}{\btitle{例題}}
-  \begin{problem}[ZJ a146 Sliding Window]
+  \begin{problem}[經典問題]
     令 $F(i, j)$ 為一個對所有 $1 \leq i \leq j \leq N$ 的正整數 $i, j$ 都有定義的函數。對於所有的 $1 \leq j \leq N$，求 $\min_{i \leq j}F(i, j)$ 或 $\max_{i \leq j}F(i, j)$。
   \end{problem}
   這樣看起來有點抽象，我們來實際看一個例子：
 \end{frame}
 
 \begin{frame}{\btitle{例題}}
-  \begin{problem}[ZJ a146 Sliding Window]
+  \begin{problem}[AtCoder ARC067 D Yakiniku Restaurants]
     有 $N$ 個位於一維數線上的餐廳，由左至右編為 $1$ 到 $N$ 號，其中 $i$ 號餐廳與 $i - 1$ 號餐廳的距離為 $A_i$。你有 $M$ 張餐卷，第 $i$ 張可以兌換第 $i$ 種食物且只能使用一次。已知這 $N$ 家餐廳都有販售這 $M$ 種食物，且第 $i$ 家餐廳的第 $j$ 種食物的好吃度為 $B_{i, j}$。你可以從任意間餐廳開始，請問「吃到食物的好吃度總和 $-$ 總行走距離」的最大值為何。
     
     \begin{itemize}
@@ -37,7 +37,7 @@
 
     \[ H_j = \mathop{\arg\max}_{i \leq j}F(i, j) \]
 
-    則 $H_j \leq H_{j + 1}$。也就是說當終點向右時，最佳的起點只會往右或不動
+    則 $H_j \leq H_{j + 1}$。也就是說當終點向右時，最佳的起點只會往右或不動（證明是用 Monge Condition 證的）
   \end{theorem}
 \end{frame}
 
@@ -84,6 +84,14 @@
     \end{itemize}
     \item 複雜度為 $O(N \log^2 N)$
     \item 範例 code 麻煩參考講義～
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{\btitle{CDQ 配轉移點單調}}
+  \begin{itemize}
+  \item 而根據前面的分析，這個演算法的重點會是在「用左半部的 DP 值更新右半部的 DP 值」這個部份上
+  \item 而因為我們已經算出左半部的所有的 DP 值，所以這其實本質上就是一個\textbf{代價可以離線的轉移點單調 DP 問題}
+  \item 所以，我們可以花 $O(N \log N)$ 的時間，跑一次轉移點單調優化，來達到「用左半部的 DP 值更新右半部的 DP 值」這個部份
   \end{itemize}
 \end{frame}
 

@@ -18,6 +18,7 @@
 \begin{frame}{單調隊列優化}
   \begin{itemize}
     \item naive 作法：$O(NK)$，太慢了
+    \item 用線段樹等等資料結構硬砸，雖然是 $O(N \log N)$，但還是不夠快
     \item 因此，我們需要一些觀察
     \item 假設我們在做 $\min$ 的情況
   \end{itemize}
@@ -43,7 +44,6 @@
       \item 每次計算答案的時候還需檢查在資料結構最前面（基於單調性，一定是目前裡面最小的元素）的元素是否還合法，不合法的話要 pop 掉
       \item 我們便可以確定此時資料結構最前的元素就是位置 $i$ 的答案
     \end{itemize}
-    \item 那個資料結構需要支援從前面刪除元素，從後面加入及刪除元素，雙向佇列（double-ended queue, deque）是一個不錯的選擇，且 STL 也有提供 \texttt{std::deque} 容器，不需要自己手寫。
   \end{itemize}
 \end{frame}
 
@@ -59,6 +59,11 @@
   \end{center}
 \end{frame}
 
+\begin{frame}{單調隊列優化}
+  \begin{itemize}
+    \item 那個資料結構需要支援從前面刪除元素，從後面加入及刪除元素，雙向佇列（double-ended queue, deque）是一個不錯的選擇，且 STL 也有提供 \texttt{std::deque} 容器，不需要自己手寫。
+  \end{itemize}
+\end{frame}
 
 \begin{frame}[fragile]{\btitle{範例程式碼}}
   \begin{minted}[breaklines]{cpp}

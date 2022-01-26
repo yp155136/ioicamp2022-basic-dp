@@ -12,7 +12,7 @@
 \end{frame}
 
 \begin{frame}{\btitle{問題定義}}
-  \begin{theorem}[(1D/1D)]
+  \begin{theorem}[1D/1D 常見形式]
   要求的是一個一維代價 $dp[j], \;\forall\; 1\leq j\leq n$。
   給一可在常數時間內求得的轉移代價函數 (transition cost function) $f(i,j,dp[i]), \;\forall\; 0\leq i<j\leq n$、
   %可在常數時間內求得的代價 $f(i,E[i])$、
@@ -186,7 +186,7 @@
     sta.push(Seg(0, 1, m));
     for (int j = 1; j <= m; ++j) {
       while (!sta.empty() && sta.top().r < j) sta.pop(); // 把過期的最佳解丟掉
-      dp[j] = cal(sta.top().pos, j) - a[j]; // 平常的題目應該是不用 -a[j] 這項的，這邊 -a[j] 是因應題目要求
+      dp[j] = cal(sta.top().pos, j);
       
       while (!sta.empty() && cal(sta.top().pos, sta.top().r) > cal(j, sta.top().r)) {
         // 把被完全覆蓋的線段刪掉
@@ -368,7 +368,10 @@
 \end{frame}
 
 \begin{frame}{\btitle{Monge Condition}}
-  要注意的是，Monge condition 事實上是比較嚴格的，因此\textbf{反方向的推論並不成立}，不符合 Monge condition 也不代表不具有單調性。
+  \begin{itemize}
+    \item 容易驗證，由 convex (concave) Monge condition 推得凸（凹）單調性（也就是說，凹凸單調優化的正確性常用 Monge condition 證明）
+    \item 要注意的是，Monge condition 事實上是比較嚴格的，因此\textbf{反方向的推論並不成立}，不符合 Monge condition 也不代表不具有單調性
+  \end{itemize}
 \end{frame}
 
 \end{document}
